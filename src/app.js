@@ -1,8 +1,9 @@
 import { getState, subscribe } from './store.js';
 import { renderPublic } from './public.js';
 import { renderAdmin } from './admin.js';
-import { hasUnsavedChanges, esc, icon } from './ui.js';
+import { hasUnsavedChanges, esc, icon, safeImage } from './ui.js';
 import { syncEntrance } from './entrance.js';
+import { appPath, routePath } from './paths.js';
 
 const root=document.getElementById('app');
 function render() {
@@ -13,18 +14,18 @@ function render() {
   const rgb=accent.slice(1).match(/.{2}/g).map(value=>parseInt(value,16)/255);
   const luminance=rgb.map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4).reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0);
   document.documentElement.style.setProperty('--accent-ink',luminance>.179?'#10110f':'#ffffff');
-  const path=location.pathname.replace(/\/$/,'')||'/';
+  const path=routePath(location.pathname);
   document.querySelector('.skip-link').href=path==='/'||path==='/links'?'#conteudo':'#main';
   document.body.classList.toggle('is-admin',path==='/admin');
   document.title=`${path==='/admin'?'Painel':path==='/links'?'Links':'O interior faz barulho'} — ${state.settings.name}`;
   try {
     if(path==='/admin')renderAdmin(root,state);
     else if(path==='/'||path==='/links')renderPublic(root,state,path);
-    else root.innerHTML=`<main id="main" class="route-error"><span class="eyebrow">404 / FORA DA FREQUÊNCIA</span><h1>Esse caminho ainda não existe.</h1><a class="button" href="/">Voltar para o início ${icon('arrow-right')}</a></main>`;
-    syncEntrance(path,state.settings);
+    else root.innerHTML=`<main id="main" class="route-error"><span class="eyebrow">404 / FORA DA FREQUÊNCIA</span><h1>Esse caminho ainda não existe.</h1><a class="button" href="${appPath('/')}">Voltar para o início ${icon('arrow-right')}</a></main>`;
+    syncEntrance(path,{...state.settings,logo:safeImage(state.settings.logo)});
   } catch(error) {
     console.error(error);
-    root.innerHTML=`<main id="main" class="route-error"><h1>Não foi possível abrir esta página.</h1><p>${esc(error.message)}</p><a class="button" href="/admin">Abrir painel de demonstração</a></main>`;
+    root.innerHTML=`<main id="main" class="route-error"><h1>Não foi possível abrir esta página.</h1><p>${esc(error.message)}</p><a class="button" href="${appPath('/admin')}">Abrir painel de demonstração</a></main>`;
   }
 }
 let pendingFrame;

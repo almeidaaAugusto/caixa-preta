@@ -4,7 +4,7 @@ Protótipo funcional para apresentar à produtora o gerenciamento de divulgaçã
 
 ## Executar e acessar
 
-Na pasta `plataforma`, com Node.js instalado:
+Na pasta da aplicação (raiz do repositório clonado ou `plataforma` no workspace original), com Node.js instalado:
 
 ```powershell
 npm.cmd start
@@ -21,6 +21,22 @@ Não é necessário instalar dependências para executar a aplicação. Abra:
 | Prévia da landing | http://127.0.0.1:4173/?preview=1 |
 
 O servidor aceita `--port 4174` para outra porta. `localhost` e `127.0.0.1` são origens diferentes: use sempre o mesmo endereço durante a apresentação. A versão hospedada também possui um armazenamento separado da versão local.
+
+## GitHub e publicação automática
+
+Repositório: [almeidaaAugusto/caixa-preta](https://github.com/almeidaaAugusto/caixa-preta).
+
+| Área no GitHub Pages | Endereço |
+| --- | --- |
+| Landing page | https://almeidaaaugusto.github.io/caixa-preta/ |
+| Links | https://almeidaaaugusto.github.io/caixa-preta/links/ |
+| Painel demonstrativo | https://almeidaaaugusto.github.io/caixa-preta/admin/ |
+
+O workflow `.github/workflows/pages.yml` verifica regras e persistência, gera os arquivos com a base indicada pelo GitHub Pages e publica `dist` a cada push em `main`. Também pode ser iniciado em **Actions → Publicar no GitHub Pages → Run workflow**. Em **Settings → Pages**, a origem deve ser **GitHub Actions**.
+
+O código continua funcionando na raiz de um domínio. Para gerar especificamente a versão de projeto do GitHub Pages, execute `npm.cmd run build -- --base /caixa-preta/`. Não altere os links salvos para acrescentar esse prefixo: a aplicação resolve os caminhos internos na apresentação e mantém os dados originais.
+
+O GitHub Pages publica o protótipo estático. O painel continua demonstrativo, com dados e cliques daquele navegador/origem; as alterações feitas na versão local ou na hospedagem anterior não são transferidas automaticamente para esse endereço.
 
 ## Funcionalidades operacionais
 

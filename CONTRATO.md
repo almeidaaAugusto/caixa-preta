@@ -2,6 +2,12 @@
 
 App sem framework, ES modules, caminho base `/`. Toda interface pt-BR. Arquivos deste contrato são a referência das integrações; não inventar funções paralelas.
 
+## Caminho da publicação (`src/paths.js`)
+
+`BASE_PATH` deriva da localização HTTP(S) do módulo, mantendo `/` nos testes Node. `appPath(value, base=BASE_PATH)` resolve destinos internos e imagens sem duplicar prefixo; URLs externas, âncoras, query isolada, `mailto:`, `tel:` e `data:` são preservados. `routePath(pathname, base=BASE_PATH)` remove somente o prefixo correspondente e normaliza barra final/`index.html`. `appMarkup(markup, base=BASE_PATH)` resolve atributos `href` e `src` do HTML produzido, sem modificar campos de formulário ou os dados persistidos.
+
+`scripts/build.mjs --base /caixa-preta/` gera `dist` para GitHub Pages, com HTML, importmap e URLs CSS no mesmo prefixo. Sem `--base`, a aplicação continua na raiz. `scripts/serve.mjs --dist --base /caixa-preta/ --port 4174` serve esse pacote para verificação. Navegação, imagens e logo da entrada resolvem a base somente na apresentação.
+
 ## Dados e domínio (`src/domain.js`, `src/data.js`)
 
 `state = {version:1, settings, categories:[], links:[], events:[], featured:null|{kind:'link'|'event',id}, clicks:[]}`.

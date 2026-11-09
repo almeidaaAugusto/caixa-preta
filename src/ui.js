@@ -1,4 +1,5 @@
 import { isValidDestination } from './domain.js';
+import { appPath, appMarkup, BASE_PATH } from './paths.js';
 
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const paths = {
@@ -17,9 +18,10 @@ const paths = {
 };
 export const icon = (name, size=20) => `<svg width="${Number(size)||20}" height="${Number(size)||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name] || paths.link}"/></svg>`;
 
-export function safeImage(value) {
+export function safeImage(value, base=BASE_PATH) {
   const input = String(value ?? '').trim();
-  return /^(\/assets\/|data:image\/(png|jpeg|webp|gif);base64,)/i.test(input) || (/^https?:\/\//i.test(input) && isValidDestination(input)) ? input : '';
+  const local=input.startsWith('/assets/')||input.startsWith(appPath('/assets/',base));
+  return /^data:image\/(png|jpeg|webp|gif);base64,/i.test(input) || ((local||/^https?:\/\//i.test(input))&&isValidDestination(input)) ? appPath(input,base) : '';
 }
 
 export function brand(settings, compact=false) {
@@ -62,7 +64,7 @@ export function openModal({title,content,wide=false,onMount}) {
   const previous=document.activeElement;
   const dialog=document.createElement('dialog');dialog.className=`modal ${wide?'modal-wide':''}`;
   const titleId=`modal-${crypto.randomUUID()}`;dialog.setAttribute('aria-labelledby',titleId);
-  dialog.innerHTML=`<div class="modal-heading"><div><span class="eyebrow">SEU CONTEÚDO, DO SEU JEITO</span><h2 id="${titleId}">${esc(title)}</h2></div><button type="button" class="icon-button modal-close" aria-label="Fechar">${icon('close')}</button></div><div class="modal-body">${content}</div>`;
+  dialog.innerHTML=`<div class="modal-heading"><div><span class="eyebrow">SEU CONTEÚDO, DO SEU JEITO</span><h2 id="${titleId}">${esc(title)}</h2></div><button type="button" class="icon-button modal-close" aria-label="Fechar">${icon('close')}</button></div><div class="modal-body">${appMarkup(content)}</div>`;
   document.body.append(dialog);
   const guards=[...dialog.querySelectorAll('form')].map(guardForm);
   const close=(force=false)=>{if(!force&&guards.some(g=>g.isDirty())&&!confirm('Descartar as alterações não salvas?'))return;guards.forEach(g=>g.destroy());dialog.close();dialog.remove();if(previous?.isConnected)previous.focus();};

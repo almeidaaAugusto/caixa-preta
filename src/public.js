@@ -1,5 +1,6 @@
 import { visibleLinks, visibleEvents, featuredItem, statusOf, isValidDestination, formatDate, dateParts } from './domain.js';
 import { recordClick } from './store.js';
+import { appMarkup } from './paths.js';
 import { esc, icon, brand, statusBadge, safeImage } from './ui.js';
 
 const listeners = new WeakMap();
@@ -176,7 +177,7 @@ export function renderPublic(root, state, route) {
     root.removeEventListener('auxclick', previousListener);
   }
   const preview = new URLSearchParams(window.location.search).get('preview') === '1';
-  root.innerHTML = route === '/links' ? linksPage(state, new Date(), preview) : landing(state, new Date(), preview);
+  root.innerHTML = appMarkup(route === '/links' ? linksPage(state, new Date(), preview) : landing(state, new Date(), preview));
   bindImageFallbacks(root);
   document.title = `${route === '/links' ? 'Links' : 'Cultura em movimento'} — ${state.settings.name || 'Caixa Preta'}`;
   if (!preview) {
