@@ -55,6 +55,14 @@ Todas as mutações persistem antes de publicar o novo estado e notificam assina
 
 `src/app.js`: renderiza por pathname, assina store e re-renderiza. Dialogs são anexados a document.body, fora de root. Cliques de navegação interna podem usar `<a href>` nativo; não há roteador para aprender.
 
+## Entrada interativa
+
+`src/entrance.js`: exporta `syncEntrance(route, settings)`, chamado após renderizar a página. Mantém a entrada fora do root para preservar a cena em atualizações do conteúdo; acompanha nome, logo e frase compartilhados. Carrega Three.js somente quando a entrada é exibida. A chave `caixa-preta-entrance-v1` em `sessionStorage` controla a primeira visita por sessão/aba; `[data-replay-entrance]` permite repetir. Rotas `/links`, `/admin`, prévias e âncoras entram diretamente. O diálogo tem pausa, teclado, movimento reduzido e fallback CSS; ao terminar, remove listeners/canvas e devolve foco à landing.
+
+`src/box-scene.js`: exporta `createBoxScene({canvas, logo='', name='Caixa Preta', paused=false, onError=()=>{}})`, que retorna `{setPaused, setBrand, drag, open, dispose}`. `setBrand({name,logo})` invalida cargas de imagem antigas; `drag(dx,dy)` explora o objeto; `open({duration=1600}={})` retorna uma Promise que também resolve no descarte. Falha inicial lança erro; perda de contexto chama `onError`. A cena respeita visibilidade, limita a resolução e libera recursos de GPU em `dispose()`.
+
+O importmap de `index.html` mapeia `three` à biblioteca local em `assets/vendor/three`. `scripts/vendor-three.mjs` reproduz as cópias da versão fixada em package-lock, preservando a licença MIT. A biblioteca e o helper de geometria não dependem de CDN no navegador.
+
 ## Identidade e assets
 
 Paleta: `--bg:#10110f`, `--surface:#1b1c19`, `--paper:#f0efe7`, `--accent:#f2e600`, cinzas quentes. Tipografia: Arial/Helvetica no corpo, Impact/Arial Narrow nos grandes títulos, monospace para metadados. Direção editorial, grid intencional, bordas finas, sem gradientes genéricos.

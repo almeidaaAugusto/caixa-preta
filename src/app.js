@@ -2,6 +2,7 @@ import { getState, subscribe } from './store.js';
 import { renderPublic } from './public.js';
 import { renderAdmin } from './admin.js';
 import { hasUnsavedChanges, esc, icon } from './ui.js';
+import { syncEntrance } from './entrance.js';
 
 const root=document.getElementById('app');
 function render() {
@@ -20,6 +21,7 @@ function render() {
     if(path==='/admin')renderAdmin(root,state);
     else if(path==='/'||path==='/links')renderPublic(root,state,path);
     else root.innerHTML=`<main id="main" class="route-error"><span class="eyebrow">404 / FORA DA FREQUÊNCIA</span><h1>Esse caminho ainda não existe.</h1><a class="button" href="/">Voltar para o início ${icon('arrow-right')}</a></main>`;
+    syncEntrance(path,state.settings);
   } catch(error) {
     console.error(error);
     root.innerHTML=`<main id="main" class="route-error"><h1>Não foi possível abrir esta página.</h1><p>${esc(error.message)}</p><a class="button" href="/admin">Abrir painel de demonstração</a></main>`;

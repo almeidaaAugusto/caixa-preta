@@ -24,6 +24,9 @@ O servidor aceita `--port 4174` para outra porta. `localhost` e `127.0.0.1` são
 
 ## Funcionalidades operacionais
 
+- Entrada 3D da landing: caixa preta giratória com a marca, exploração por arraste e abertura por clique, toque, Enter ou Espaço. A tampa e as faces se abrem antes de revelar a landing completa.
+- Controle de rotação, entrada direta e botão **Ver abertura 3D** na landing. A entrada aparece uma vez por sessão/aba; recarregar após entrar preserva o acesso direto.
+
 - Links: criar, editar, categorizar, escolher ícone, enviar imagem ou usar URL, reordenar dentro da categoria, ativar/desativar, excluir com confirmação, destacar e agendar exibição.
 - Categorias: criar, editar e excluir. Ao excluir, os links ficam preservados em “Sem categoria”.
 - Campanhas: use links com destaque, descrição, arte e início/fim de exibição; não há um cadastro separado que duplique esses conteúdos.
@@ -34,6 +37,18 @@ O servidor aceita `--port 4174` para outra porta. `localhost` e `127.0.0.1` são
 - Métricas: contagem real dos cliques em links e ações de eventos realizados neste navegador, filtros de 7/30 dias ou todo o período, ranking e gráfico dos últimos 7 dias. Não há visitantes fictícios ou estimativa de audiência geral.
 - Confirmação de exclusão/restauração, aviso de alterações não salvas, proteção ao descartar, navegação por teclado, estados vazios e mensagens de erro/gravação.
 - Atualização entre abas da mesma origem. A agenda é reavaliada ao abrir/recarregar e a cada 30 segundos enquanto a página estiver visível e sem edição em andamento.
+
+## Abertura interativa
+
+A entrada adapta o conceito indicado pelo usuário no [site de referência](https://filipenava.github.io/caixa-preta/). A referência usa Three.js para criar uma caixa por geometria; não foi identificada dependência de `jpg2threejs` no seu código público. Nossa cena e integração foram implementadas com código próprio.
+
+Three.js 0.180.0, seu helper de geometria e a licença MIT estão em `assets/vendor/three`. A biblioteca é carregada somente ao mostrar a entrada, sem CDN ou serviço de conversão de imagens. Para atualizar/reproduzir as cópias locais após `npm ci`, execute `npm.cmd run vendor:three`.
+
+`/links`, `/admin`, as prévias e os endereços com âncora, como `/#agenda`, abrem diretamente. A opção **Pular introdução** e a tecla Escape também levam imediatamente ao conteúdo. **Ver abertura 3D** permite rever a experiência sem apagar os dados ou sair da página.
+
+A preferência de movimento reduzido inicia a caixa parada e evita a transição longa ao entrar. Se a cena/WebGL não puder iniciar, uma caixa em CSS mantém a interação e o acesso direto. Nome e logo acompanham as configurações compartilhadas do painel, inclusive com a entrada já aberta em outra aba. Ao revelar o conteúdo, a cena libera seus recursos e interrompe a renderização; não há 3D rodando continuamente por trás das demais áreas.
+
+O controle da sessão usa apenas a chave `caixa-preta-entrance-v1` em `sessionStorage`; não altera a persistência do conteúdo ou as métricas. Imagens e identidade seguem o caráter provisório já informado.
 
 ## Persistência e limites desta versão
 
@@ -69,7 +84,7 @@ O Instagram é o endereço fornecido pelo usuário. Não foram inferidos contato
 
 | Tempo | Ação |
 | --- | --- |
-| 0:00–0:30 | Abra `/`. Apresente marca, destaque, agenda e avise que os eventos e a identidade proposta estão em demonstração. |
+| 0:00–0:30 | Abra `/`, explore o cubo e clique em Abrir a caixa. A animação revela a landing; apresente marca, destaque e agenda e avise que eventos e identidade estão em demonstração. Para repetir, use Ver abertura 3D. |
 | 0:30–1:00 | Abra `/links`, o endereço para a bio. Mostre destaque, categorias, cards de eventos e Instagram configurado. |
 | 1:00–1:50 | Em outra aba da mesma origem, abra `/admin` → Links e categorias. Edite “Encontre seu próximo rolê” para “Agenda da Caixa — Demonstração”, ajuste a descrição, mantenha o destino interno configurado e salve. Destaque o link. |
 | 1:50–2:20 | Retorne à aba pública e mostre a mudança e o destaque compartilhados. Recarregue para comprovar persistência. |

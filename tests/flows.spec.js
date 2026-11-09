@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
 const future = days => {const date=new Date();date.setDate(date.getDate()+days);date.setHours(22,0,0,0);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}T22:00`;};
-test.beforeEach(async({page})=>{page.on('dialog',dialog=>dialog.accept());});
+test.beforeEach(async({page})=>{page.on('dialog',dialog=>dialog.accept());await page.addInitScript(()=>sessionStorage.setItem('caixa-preta-entrance-v1','entered'));});
 
 async function newLink(page,title='Link de teste') {
   await page.getByRole('button',{name:'Novo link',exact:true}).click();
