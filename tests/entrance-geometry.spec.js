@@ -25,7 +25,7 @@ async function expectClosedCube(page) {
   for(const face of faces)face.bounds.forEach((value,index)=>expect(value,`${face.name} limite ${index}`).toBeCloseTo(expected[face.name][index],3));
 }
 
-test('caixa CSS inicia fechada durante carregamento lento e falha do 3D',async({page})=>{
+test('caixa CSS aparece fechada somente quando o 3D falha',async({page})=>{
   let release;
   const pending=new Promise(resolve=>{release=resolve;});
   await page.route('**/src/box-scene.js',async route=>{await pending;await route.abort().catch(()=>{});});
@@ -33,11 +33,55 @@ test('caixa CSS inicia fechada durante carregamento lento e falha do 3D',async({
     await page.goto('/',{waitUntil:'domcontentloaded'});
     const stage=page.locator('[data-entrance-stage]');
     await expect(stage).toHaveAttribute('data-renderer','loading');
-    await expectClosedCube(page);
+    await expect(page.locator('.entrance-fallback')).toBeHidden();
+    await expect(page.locator('[data-entrance-canvas]')).toBeHidden();
+    await expect(page.getByRole('status')).toContainText('Preparando a caixa');
+    await expect(page.locator('[data-entrance-open]')).toBeDisabled();
     release();
     await expect(stage).toHaveAttribute('data-renderer','fallback');
+    await expect(page.locator('.entrance-fallback')).toBeVisible();
     await expectClosedCube(page);
     await page.getByRole('button',{name:'Pular introdução',exact:true}).click();
     await expect(page.locator('.entrance-dialog')).toHaveCount(0);
+  } finally {release();}
+});
+
+test('modelo 3D aparece com a marca pronta sem trocar de cubo',async({page})=>{
+  let releaseModule,releaseImage;
+  const moduleGate=new Promise(resolve=>{releaseModule=resolve;});
+  const imageGate=new Promise(resolve=>{releaseImage=resolve;});
+  await page.route('**/src/box-scene.js',async route=>{await moduleGate;await route.continue().catch(()=>{});});
+  await page.route('**/assets/perfil-referencia.jpeg',async route=>{await imageGate;await route.continue().catch(()=>{});});
+  try {
+    await page.goto('/',{waitUntil:'domcontentloaded'});
+    const stage=page.locator('[data-entrance-stage]');
+    const canvas=page.locator('[data-entrance-canvas]');
+    await expect(stage).toHaveAttribute('data-renderer','loading');
+    await expect(page.locator('.entrance-fallback')).toBeHidden();
+    releaseModule();
+    await expect.poll(()=>canvas.evaluate(element=>element.width),{timeout:15000}).not.toBe(300);
+    await expect(stage).toHaveAttribute('data-renderer','loading');
+    await expect(canvas).toBeHidden();
+    releaseImage();
+    await expect(stage).toHaveAttribute('data-renderer','webgl',{timeout:15000});
+    await expect(canvas).toBeVisible();
+    await expect(page.locator('.entrance-fallback')).toBeHidden();
+    await expect(page.locator('[data-entrance-open]')).toBeEnabled();
+  } finally {releaseModule();releaseImage();}
+});
+
+test('pular durante a carga impede que o modulo atrasado reabra a entrada',async({page})=>{
+  let release;
+  const pending=new Promise(resolve=>{release=resolve;});
+  await page.route('**/src/box-scene.js',async route=>{await pending;await route.continue().catch(()=>{});});
+  try {
+    await page.goto('/',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('[data-entrance-stage]')).toHaveAttribute('data-renderer','loading');
+    await page.locator('[data-entrance-skip]').click();
+    release();
+    await page.evaluate(()=>import('/src/box-scene.js').then(()=>{}));
+    await expect(page.locator('.entrance-dialog')).toHaveCount(0);
+    await expect(page.locator('[data-entrance-canvas]')).toHaveCount(0);
+    await expect(page.locator('.landing-hero h1')).toBeFocused();
   } finally {release();}
 });

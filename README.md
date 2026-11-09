@@ -48,6 +48,8 @@ Three.js 0.180.0, seu helper de geometria e a licença MIT estão em `assets/ven
 
 A preferência de movimento reduzido inicia a caixa parada e evita a transição longa ao entrar. Se a cena/WebGL não puder iniciar, uma caixa em CSS mantém a interação e o acesso direto. Nome e logo acompanham as configurações compartilhadas do painel, inclusive com a entrada já aberta em outra aba. Ao revelar o conteúdo, a cena libera seus recursos e interrompe a renderização; não há 3D rodando continuamente por trás das demais áreas.
 
+O padrão visual principal é o modelo Three.js. Durante a preparação aparece apenas “Preparando a caixa”; o cubo é mostrado depois de sua marca ser desenhada, evitando a troca entre dois modelos no início. A caixa CSS fica reservada à falha da cena ou ao limite de dez segundos de preparação, e não é substituída por um carregamento atrasado. Pular introdução e Escape continuam disponíveis durante toda a espera.
+
 A abertura não depende de armazenamento da sessão. A chave `caixa-preta-entrance-v1` deixada por versões anteriores é ignorada, sem exigir limpeza dos dados do navegador. Atualizações do conteúdo na mesma página não reiniciam a introdução. A persistência do conteúdo e as métricas permanecem independentes. Imagens e identidade seguem o caráter provisório já informado.
 
 ## Persistência e limites desta versão

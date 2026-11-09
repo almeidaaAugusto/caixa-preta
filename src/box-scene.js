@@ -35,6 +35,8 @@ export function createBoxScene({ canvas, logo = '', name = 'Caixa Preta', paused
   let openingProgress = 0;
   let baseFov = 36;
   let environmentTarget;
+  let settleReady;
+  const ready = new Promise(resolve => { settleReady = resolve; });
 
   const geometry = value => (geometries.add(value), value);
   const material = value => (materials.add(value), value);
@@ -187,6 +189,7 @@ export function createBoxScene({ canvas, logo = '', name = 'Caixa Preta', paused
     labelMaterial.map = next;
     labelMaterial.needsUpdate = true;
     render();
+    if (image) settleReady(true);
   }
 
   function loadLabel(source, reference = false, revision = labelRevision) {
@@ -199,13 +202,20 @@ export function createBoxScene({ canvas, logo = '', name = 'Caixa Preta', paused
       finish();
       if (disposed || revision !== labelRevision) return;
       try { paintLabel(image, reference); }
-      catch { if (!reference) loadLabel(REFERENCE, true, revision); }
+      catch { if (!reference) loadLabel(REFERENCE, true, revision); else failLabel(); }
     };
     image.onerror = () => {
       finish();
-      if (!reference && !disposed && revision === labelRevision) loadLabel(REFERENCE, true, revision);
+      if (disposed || revision !== labelRevision) return;
+      if (!reference) loadLabel(REFERENCE, true, revision);
+      else failLabel();
     };
     image.src = source;
+  }
+
+  function failLabel() {
+    settleReady(false);
+    onError(new Error('Não foi possível preparar a marca da caixa.'));
   }
 
   const shadowTexture = canvasTexture(context => {
@@ -353,6 +363,7 @@ export function createBoxScene({ canvas, logo = '', name = 'Caixa Preta', paused
     event.preventDefault();
     if (disposed || contextLost) return;
     contextLost = true;
+    settleReady(false);
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     if (opening) { opening.resolve(); opening = null; }
@@ -369,6 +380,7 @@ export function createBoxScene({ canvas, logo = '', name = 'Caixa Preta', paused
   schedule();
 
   return {
+    ready,
     setBrand({ name: nextName = name, logo: nextLogo = logo } = {}) {
       if (disposed || (nextName === name && nextLogo === logo)) return;
       const sameLogo = nextLogo === logo;
@@ -411,6 +423,7 @@ export function createBoxScene({ canvas, logo = '', name = 'Caixa Preta', paused
     dispose() {
       if (disposed) return;
       disposed = true;
+      settleReady(false);
       if (frame) cancelAnimationFrame(frame);
       frame = 0;
       if (opening) { opening.resolve(); opening = null; }

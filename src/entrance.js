@@ -24,6 +24,7 @@ function showEntrance(settings) {
   let paused=media.matches;
   let phase='idle';
   let scene=null;
+  let loadingTimer;
   let openingAnimation=null;
   let fadeAnimation=null;
   let pointer=null;
@@ -35,7 +36,7 @@ function showEntrance(settings) {
   dialog.className='entrance-dialog';
   dialog.setAttribute('aria-labelledby','entrance-title');
   dialog.setAttribute('aria-describedby','entrance-description');
-  dialog.innerHTML=`<div class="entrance-shell"><header class="entrance-header"><span class="entrance-brand" data-entrance-brand>${brand(settings)}</span><span class="entrance-edition">CAIXA PRETA / EXPERIÊNCIA 001</span><button type="button" class="entrance-skip" data-entrance-skip>Pular introdução ${icon('arrow-up-right',17)}</button></header><div class="entrance-main"><span class="entrance-background-word" aria-hidden="true">CAIXA</span><div class="entrance-stage" data-entrance-stage data-renderer="loading"><div class="entrance-orbit" aria-hidden="true"></div><button type="button" class="entrance-cube-button" aria-label="Abrir a caixa em 3D" aria-describedby="entrance-gesture"><div class="entrance-fallback" aria-hidden="true"><div class="entrance-fallback-cube"><span class="entrance-face entrance-face-front"><span class="entrance-face-number">CP / 001</span><span class="entrance-face-brand">${brand(settings,true)}<b>${esc(settings.name)}</b></span><small>O INTERIOR FAZ BARULHO.</small></span><span class="entrance-face entrance-face-back"></span><span class="entrance-face entrance-face-left"></span><span class="entrance-face entrance-face-right"><i>CP</i></span><span class="entrance-face entrance-face-top"><i>↗</i></span><span class="entrance-face entrance-face-bottom"></span></div></div><canvas data-entrance-canvas aria-hidden="true"></canvas></button><div class="entrance-light" aria-hidden="true"></div></div><p class="entrance-gesture" id="entrance-gesture"><span>ARRASTE PARA EXPLORAR</span><i></i><span>CLIQUE PARA ABRIR ${icon('arrow-up-right',13)}</span></p></div><footer class="entrance-footer"><div class="entrance-invitation"><span class="eyebrow">UMA CAIXA. MUITAS POSSIBILIDADES.</span><h1 id="entrance-title">Abra a <span>Caixa Preta.</span></h1><p id="entrance-description" data-entrance-description>${esc(settings.tagline)}</p></div><div class="entrance-actions"><button type="button" class="button entrance-open" data-entrance-open autofocus>Abrir a caixa ${icon('arrow-up-right',19)}</button><button type="button" class="entrance-pause" data-entrance-pause aria-pressed="false">${icon('clock',14)}<span>Pausar rotação</span></button></div></footer><div class="entrance-bottom"><span>DEMONSTRAÇÃO / IDENTIDADE EM AVALIAÇÃO</span><span>SOM. CORPO. ENCONTRO.</span></div></div>`;
+  dialog.innerHTML=`<div class="entrance-shell"><header class="entrance-header"><span class="entrance-brand" data-entrance-brand>${brand(settings)}</span><span class="entrance-edition">CAIXA PRETA / EXPERIÊNCIA 001</span><button type="button" class="entrance-skip" data-entrance-skip>Pular introdução ${icon('arrow-up-right',17)}</button></header><div class="entrance-main"><span class="entrance-background-word" aria-hidden="true">CAIXA</span><div class="entrance-stage" data-entrance-stage data-renderer="loading" aria-busy="true"><div class="entrance-orbit" aria-hidden="true"></div><div class="entrance-loading" role="status"><span class="entrance-loading-mark" aria-hidden="true"></span><span>Preparando a caixa&#8230;</span></div><button type="button" class="entrance-cube-button" aria-label="Abrir a caixa em 3D" aria-describedby="entrance-gesture"><div class="entrance-fallback" aria-hidden="true"><div class="entrance-fallback-cube"><span class="entrance-face entrance-face-front"><span class="entrance-face-number">CP / 001</span><span class="entrance-face-brand">${brand(settings,true)}<b>${esc(settings.name)}</b></span><small>O INTERIOR FAZ BARULHO.</small></span><span class="entrance-face entrance-face-back"></span><span class="entrance-face entrance-face-left"></span><span class="entrance-face entrance-face-right"><i>CP</i></span><span class="entrance-face entrance-face-top"><i>↗</i></span><span class="entrance-face entrance-face-bottom"></span></div></div><canvas data-entrance-canvas aria-hidden="true"></canvas></button><div class="entrance-light" aria-hidden="true"></div></div><p class="entrance-gesture" id="entrance-gesture"><span>ARRASTE PARA EXPLORAR</span><i></i><span>CLIQUE PARA ABRIR ${icon('arrow-up-right',13)}</span></p></div><footer class="entrance-footer"><div class="entrance-invitation"><span class="eyebrow">UMA CAIXA. MUITAS POSSIBILIDADES.</span><h1 id="entrance-title">Abra a <span>Caixa Preta.</span></h1><p id="entrance-description" data-entrance-description>${esc(settings.tagline)}</p></div><div class="entrance-actions"><button type="button" class="button entrance-open" data-entrance-open autofocus>Abrir a caixa ${icon('arrow-up-right',19)}</button><button type="button" class="entrance-pause" data-entrance-pause aria-pressed="false">${icon('clock',14)}<span>Pausar rotação</span></button></div></footer><div class="entrance-bottom"><span>DEMONSTRAÇÃO / IDENTIDADE EM AVALIAÇÃO</span><span>SOM. CORPO. ENCONTRO.</span></div></div>`;
   document.body.append(dialog);
   document.body.classList.add('has-entrance');
   const stage=dialog.querySelector('[data-entrance-stage]');
@@ -43,6 +44,25 @@ function showEntrance(settings) {
   const cube=dialog.querySelector('.entrance-cube-button');
   const openButton=dialog.querySelector('[data-entrance-open]');
   const pauseButton=dialog.querySelector('[data-entrance-pause]');
+  const openContent=openButton.innerHTML;
+  dialog.classList.add('is-loading');
+  openButton.setAttribute('aria-disabled','true');
+  openButton.textContent='Preparando a caixa…';
+  cube.disabled=true;pauseButton.disabled=true;
+
+  function ready(renderer) {
+    if(phase==='revealed')return;
+    clearTimeout(loadingTimer);
+    stage.dataset.renderer=renderer;
+    stage.setAttribute('aria-busy','false');
+    stage.classList.toggle('has-webgl',renderer==='webgl');
+    canvas.hidden=renderer!=='webgl';
+    dialog.classList.remove('is-loading');
+    if(phase==='idle'){
+      cube.disabled=false;pauseButton.disabled=false;
+      openButton.removeAttribute('aria-disabled');openButton.innerHTML=openContent;
+    }
+  }
 
   function updatePause() {
     dialog.classList.toggle('is-paused',paused);
@@ -54,6 +74,7 @@ function showEntrance(settings) {
   function finish(focus=true) {
     if(phase==='revealed')return;
     phase='revealed';abort.abort();
+    clearTimeout(loadingTimer);
     openingAnimation?.cancel();fadeAnimation?.cancel();
     scene?.dispose();scene=null;
     media.removeEventListener('change',onMotionChange);
@@ -68,12 +89,11 @@ function showEntrance(settings) {
 
   function fallback() {
     if(phase==='revealed')return;
-    scene?.dispose();scene=null;stage.dataset.renderer='fallback';
-    stage.classList.remove('has-webgl');canvas.hidden=true;
+    scene?.dispose();scene=null;ready('fallback');
   }
 
   async function open() {
-    if(phase!=='idle')return;
+    if(phase!=='idle'||stage.dataset.renderer==='loading')return;
     if(media.matches){finish();return;}
     phase='opening';dialog.classList.add('is-opening');
     cube.disabled=true;openButton.disabled=true;pauseButton.disabled=true;
@@ -132,12 +152,16 @@ function showEntrance(settings) {
   }};
   updatePause();
   dialog.showModal();openButton.focus({preventScroll:true});
+  loadingTimer=setTimeout(fallback,10000);
 
-  import('./box-scene.js').then(({createBoxScene})=>{
-    if(phase!=='idle'||abort.signal.aborted)return;
+  import('./box-scene.js').then(async({createBoxScene})=>{
+    if(phase!=='idle'||abort.signal.aborted||stage.dataset.renderer!=='loading')return;
     try{
-      scene=createBoxScene({canvas,logo:settings.logo,name:settings.name,paused,onError:fallback});
-      stage.dataset.renderer='webgl';stage.classList.add('has-webgl');
+      const created=createBoxScene({canvas,logo:settings.logo,name:settings.name,paused,onError:fallback});
+      scene=created;
+      const prepared=await created.ready;
+      if(phase!=='idle'||abort.signal.aborted||scene!==created||stage.dataset.renderer!=='loading')return;
+      if(prepared)ready('webgl');else fallback();
     }catch{fallback();}
   }).catch(fallback);
 }

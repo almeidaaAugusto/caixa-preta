@@ -61,6 +61,8 @@ Todas as mutações persistem antes de publicar o novo estado e notificam assina
 
 `src/box-scene.js`: exporta `createBoxScene({canvas, logo='', name='Caixa Preta', paused=false, onError=()=>{}})`, que retorna `{setPaused, setBrand, drag, open, dispose}`. `setBrand({name,logo})` invalida cargas de imagem antigas; `drag(dx,dy)` explora o objeto; `open({duration=1600}={})` retorna uma Promise que também resolve no descarte. Falha inicial lança erro; perda de contexto chama `onError`. A cena respeita visibilidade, limita a resolução e libera recursos de GPU em `dispose()`.
 
+O handle também expõe `ready: Promise<boolean>`: `true` somente após pintar a imagem vigente na marca e renderizar; `false` em descarte, perda de contexto ou falha total da imagem e de sua referência local. O controlador mantém o handle desde a criação, aguarda `ready` e confere fase, cancelamento e identidade da cena antes de mostrar WebGL. Durante `loading`, mostra status sem cubo CSS e bloqueia abertura/pausa; pular continua disponível. Um limite de dez segundos ativa a alternativa CSS e impede substituição posterior por um módulo atrasado.
+
 O importmap de `index.html` mapeia `three` à biblioteca local em `assets/vendor/three`. `scripts/vendor-three.mjs` reproduz as cópias da versão fixada em package-lock, preservando a licença MIT. A biblioteca e o helper de geometria não dependem de CDN no navegador.
 
 ## Identidade e assets
