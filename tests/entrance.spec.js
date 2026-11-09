@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 
-test('primeira visita oferece caixa 3D e abertura revela landing',async({page})=>{
+test('abertura reaparece ao recarregar ou voltar para a pagina inicial',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/');const entrance=page.getByRole('dialog',{name:'Abra a Caixa Preta.'});
   await expect(entrance).toBeVisible();
@@ -11,8 +11,13 @@ test('primeira visita oferece caixa 3D e abertura revela landing',async({page})=
   await expect(entrance).toHaveCount(0,{timeout:7000});
   await expect(page.locator('.landing-hero h1')).toBeVisible();await expect(page.locator('.landing-hero h1')).toBeFocused();
   await expect(page.locator('[data-entrance-canvas]')).toHaveCount(0);
-  expect(await page.evaluate(()=>sessionStorage.getItem('caixa-preta-entrance-v1'))).toBe('entered');
-  await page.reload();await expect(entrance).toHaveCount(0);expect(errors).toEqual([]);
+  // Simula a chave deixada pela versão anterior, sem apagar os dados do navegador.
+  await page.evaluate(()=>sessionStorage.setItem('caixa-preta-entrance-v1','entered'));
+  await page.reload();await expect(entrance).toBeVisible();
+  await entrance.getByRole('button',{name:'Pular introdução',exact:true}).click();
+  await page.reload();await expect(entrance).toBeVisible();
+  await page.keyboard.press('Escape');await page.goto('/links');await page.goto('/');
+  await expect(entrance).toBeVisible();expect(errors).toEqual([]);
 });
 
 test('pular entra imediatamente e permite rever a abertura',async({page})=>{

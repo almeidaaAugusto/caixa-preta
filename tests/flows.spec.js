@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
 const future = days => {const date=new Date();date.setDate(date.getDate()+days);date.setHours(22,0,0,0);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}T22:00`;};
-test.beforeEach(async({page})=>{page.on('dialog',dialog=>dialog.accept());await page.addInitScript(()=>sessionStorage.setItem('caixa-preta-entrance-v1','entered'));});
+test.beforeEach(async({page})=>{page.on('dialog',dialog=>dialog.accept());});
 
 async function newLink(page,title='Link de teste') {
   await page.getByRole('button',{name:'Novo link',exact:true}).click();
@@ -19,6 +19,7 @@ test('rotas carregam sem erro e cabem na largura disponivel',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   for(const path of ['/','/links','/admin','/admin?tab=links','/admin?tab=eventos','/admin?tab=aparencia','/admin?tab=metricas']){
     await page.goto(path);
+    if(path==='/')await page.getByRole('button',{name:'Pular introdução',exact:true}).click();
     await expect(page.locator('h1').first()).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),path).toBe(true);
     await expect(page.getByText('Não foi possível abrir esta página.')).toHaveCount(0);
@@ -65,6 +66,7 @@ test('evento criado aparece nas duas paginas e edicao sincroniza abas',async({pa
   await dialog.getByLabel('Endereço para ingressos',{exact:true}).fill('/#agenda');
   await dialog.getByRole('button',{name:'Salvar evento',exact:true}).click();
   const landing=await context.newPage();await landing.goto('/');
+  await landing.getByRole('button',{name:'Pular introdução',exact:true}).click();
   const links=await context.newPage();await links.goto('/links');
   await expect(landing.getByRole('heading',{name:'Evento de teste',exact:true})).toBeVisible();
   await expect(links.getByRole('heading',{name:'Evento de teste',exact:true})).toBeVisible();
@@ -93,7 +95,7 @@ test('aparencia e textos persistem nas duas paginas sem contato inventado',async
   await page.getByLabel('Frase de abertura',{exact:true}).fill('A CENA\nÉ SUA.');
   await expect(page.getByText('Alterações não salvas')).toBeVisible();await page.getByRole('button',{name:'Salvar alterações',exact:true}).click();
   await expect(page.locator('.toast').last()).toContainText('atualizadas');
-  await page.goto('/');await expect(page.getByText('Uma descrição editada na reunião.',{exact:true})).toBeVisible();
+  await page.goto('/');await page.getByRole('button',{name:'Pular introdução',exact:true}).click();await expect(page.getByText('Uma descrição editada na reunião.',{exact:true})).toBeVisible();
   await expect(page.locator('a[href^="https://wa.me/"]')).toHaveCount(0);await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
   await page.goto('/links');await expect(page.getByText('Uma descrição editada na reunião.',{exact:true})).toBeVisible();
   await page.reload();await expect(page.getByText('Uma descrição editada na reunião.',{exact:true})).toBeVisible();

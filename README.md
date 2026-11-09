@@ -25,7 +25,7 @@ O servidor aceita `--port 4174` para outra porta. `localhost` e `127.0.0.1` são
 ## Funcionalidades operacionais
 
 - Entrada 3D da landing: caixa preta giratória com a marca, exploração por arraste e abertura por clique, toque, Enter ou Espaço. A tampa e as faces se abrem antes de revelar a landing completa.
-- Controle de rotação, entrada direta e botão **Ver abertura 3D** na landing. A entrada aparece uma vez por sessão/aba; recarregar após entrar preserva o acesso direto.
+- Controle de rotação, entrada direta e botão **Ver abertura 3D** na landing. A entrada aparece sempre que a página inicial é aberta ou recarregada, mesmo após abrir a caixa ou pular a introdução.
 
 - Links: criar, editar, categorizar, escolher ícone, enviar imagem ou usar URL, reordenar dentro da categoria, ativar/desativar, excluir com confirmação, destacar e agendar exibição.
 - Categorias: criar, editar e excluir. Ao excluir, os links ficam preservados em “Sem categoria”.
@@ -48,7 +48,7 @@ Three.js 0.180.0, seu helper de geometria e a licença MIT estão em `assets/ven
 
 A preferência de movimento reduzido inicia a caixa parada e evita a transição longa ao entrar. Se a cena/WebGL não puder iniciar, uma caixa em CSS mantém a interação e o acesso direto. Nome e logo acompanham as configurações compartilhadas do painel, inclusive com a entrada já aberta em outra aba. Ao revelar o conteúdo, a cena libera seus recursos e interrompe a renderização; não há 3D rodando continuamente por trás das demais áreas.
 
-O controle da sessão usa apenas a chave `caixa-preta-entrance-v1` em `sessionStorage`; não altera a persistência do conteúdo ou as métricas. Imagens e identidade seguem o caráter provisório já informado.
+A abertura não depende de armazenamento da sessão. A chave `caixa-preta-entrance-v1` deixada por versões anteriores é ignorada, sem exigir limpeza dos dados do navegador. Atualizações do conteúdo na mesma página não reiniciam a introdução. A persistência do conteúdo e as métricas permanecem independentes. Imagens e identidade seguem o caráter provisório já informado.
 
 ## Persistência e limites desta versão
 

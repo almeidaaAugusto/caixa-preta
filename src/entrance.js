@@ -1,16 +1,8 @@
 import { brand, esc, icon } from './ui.js';
 
-const SESSION_KEY='caixa-preta-entrance-v1';
 let considered=false;
 let currentSettings;
 let active=null;
-
-function hasEntered() {
-  try{return sessionStorage.getItem(SESSION_KEY)==='entered';}catch{return false;}
-}
-function rememberEntry() {
-  try{sessionStorage.setItem(SESSION_KEY,'entered');}catch{/* A entrada direta continua disponível sem sessionStorage. */}
-}
 
 export function syncEntrance(route,settings) {
   currentSettings=settings;
@@ -19,7 +11,7 @@ export function syncEntrance(route,settings) {
   if(considered)return;
   considered=true;
   const preview=new URLSearchParams(location.search).get('preview')==='1';
-  if(!preview&&!location.hash&&!hasEntered())showEntrance(settings);
+  if(!preview&&!location.hash)showEntrance(settings);
 }
 
 document.addEventListener('click',event=>{
@@ -61,7 +53,7 @@ function showEntrance(settings) {
 
   function finish(focus=true) {
     if(phase==='revealed')return;
-    phase='revealed';rememberEntry();abort.abort();
+    phase='revealed';abort.abort();
     openingAnimation?.cancel();fadeAnimation?.cancel();
     scene?.dispose();scene=null;
     media.removeEventListener('change',onMotionChange);
